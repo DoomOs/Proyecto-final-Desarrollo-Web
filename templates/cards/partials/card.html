@@ -1,0 +1,35 @@
+<div id="card-{{ card.uuid }}" class="list-all card shadow-1-strong m-3 p-2 pb-0">
+    <div class="card-handler d-flex justify-content-between pl-1 pr-0 pb-3 border-0">
+        <p class="mb-0"><strong>{{ card.title }}</strong></p>
+        <button class="btn btn-ouline-secondary btn-sm"
+            hx-delete="{% url 'cards:card' card.uuid %}" hx-target="#card-{{ card.uuid }}" hx-swap="delete"><span class="material-icons-outlined">
+                delete
+            </span></button>
+    </div>
+
+    <div id="parent-card-{{ card.uuid }}" class="list-items" hx-include="[name='tag-filter-item']" hx-trigger="load, filteritems from:body, tag-deleted from:body" hx-get="{% url 'cards:items-list' card.uuid %}" hx-swap="innerHTML">
+        
+    </div>
+
+    <div class="edit-item hidden" id="add-item-{{ card.uuid }}">
+        <input type="text" class="form-control" placeholder="Nombre item" name="newitem-{{ card.uuid }}" _="on htmx:afterRequest reset() me 
+        on keydown if event.code is 'Enter' then event.preventDefault() then send click to #addNewItemBtn{{ card.uuid }}">
+        <div class="p-1">
+            <button class="btn btn-primary" id="addNewItemBtn{{ card.uuid }}" type="button" _='on htmx:afterRequest 
+                                                                put "" into me.parentElement.previousElementSibling.value' 
+                                                                hx-target="#parent-card-{{ card.uuid }}"
+                                                                hx-select=".item:last-child" 
+                                                                hx-swap="beforeend" 
+                                                                hx-post="{% url 'cards:items-list' card.uuid %}" >Nuevo item</button>
+            <button class="btn btn-secondary" type="button"
+                _="on click toggle .hidden on #add-item-{{card.uuid}} toggle .hidden on #add-btn-{{ card.uuid }}">X</button>
+        </div>
+    </div>
+
+    <div class="border-0 pt-0">
+        <button id="add-btn-{{ card.uuid }}" type="button" class="btn btn-link btn-block text-reset"
+            _="on click toggle .hidden on #add-item-{{card.uuid}} toggle .hidden on me">+ agregar otro item
+        </button>
+    </div>
+
+</div>

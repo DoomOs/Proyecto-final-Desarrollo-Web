@@ -1,0 +1,12 @@
+{% extends 'base.html' %}
+{% block content %}
+
+<div class="container">
+    <h2>Agregar Nuevo Proyecto:</h2>
+    <form method="post" id="project-form">
+        {% csrf_token %}
+        {% crispy project_form %}
+    </form>
+</div>
+
+{% endblock %}

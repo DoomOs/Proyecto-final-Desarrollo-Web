@@ -1,0 +1,161 @@
+<!-- templates/board/index.html -->
+{% extends 'base.html' %}
+{% block content %}
+{% include 'board/item-details.html' %}
+
+<style>
+    /* Aplica estilos a las tarjetas */
+    .card {
+        max-width: 300px; /* Tamaño máximo de la tarjeta */
+        margin: 10px; /* Margen exterior para separar las tarjetas */
+    }
+    
+    /* Estilos para cortar el texto que no cabe en la descripción */
+    .card-text {
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        max-height: 3.6em; /* Altura máxima de 3 líneas */
+    }
+</style>
+
+<div class="container">
+    <h1>Tu Tablero, {{ user.username }}. </h1>
+    <form method="post">
+        <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#addProjectModal">Crear
+            Proyecto</button>
+    </form>
+
+    <h2>Proyectos:</h2>
+    <div class="row">
+        {% for project in user_projects %}
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h5 class="card-title">{{ project.name }}</h5>
+                        <form method="post" action="{% url 'board:delete_projet' project_id=project.id %}">
+                            {% csrf_token %}
+                            <button type="submit" class="btn btn-danger details-button">
+                                <span class="material-icons-outlined">
+                                    delete
+                                </span>
+                            </button>
+                        </form>
+                    </div>
+                    <p class="card-text">Descripción del proyecto: {{ project.description }}</p>
+                    <p class="project-id" style="display: none;">{{ project.id }}</p>
+                    <button type="button" class="btn btn-primary details-button view-details-button"
+                        data-project-id="{{ project.id }}" data-project-name="{{ project.name }}"
+                        data-description="{{ project.description }}">Ver detalles</button>
+                    <a href="{% url 'cards:project-cards' project_id=project.id %}"
+                        class="btn btn-primary details-button">Ver Tarjetas</a>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+
+<div class="modal fade" id="project-modal" tabindex="-1" role="dialog">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="project-modal-title"></h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label for="project-name">Nombre del Proyecto:</label>
+                    <input type="text" class="form-control" id="project-name">
+                </div>
+                <div class="form-group">
+                    <label for="project-description">Descripción del Proyecto:</label>
+                    <textarea class="form-control" id="project-description" rows="4"></textarea>
+                </div>
+                <!-- Campo oculto para almacenar el ID del proyecto -->
+                <input type="hidden" id="project-id">
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Cerrar</button>
+                <button type="button" class="btn btn-primary" id="save-project-details-button">Guardar Cambios</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Agrega el modal para crear un nuevo proyecto -->
+<div class="modal fade" id="addProjectModal" tabindex="-1" role="dialog" aria-labelledby="addProjectModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="addProjectModalLabel">Agregar Nuevo Proyecto</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <form method="post" id="addProjectForm">
+                    {% csrf_token %}
+                    {{ project_form.as_p }}
+                    
+                    <button type="submit" class="btn btn-primary">Guardar Proyecto</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    $(document).ready(function () {
+        $('.view-details-button').on('click', function () {
+            var projectId = $(this).data('project-id');
+            var projectName = $(this).data('project-name');
+            var description = $(this).data('description');
+            
+            // Asigna el ID del proyecto al campo oculto en el modal
+            $('#project-id').val(projectId);
+            
+            $('#project-name').val(projectName);
+            $('#project-description').val(description);
+            $('#project-modal-title').text('Detalles del Proyecto');
+            $('#project-modal').modal('show');
+        });
+
+        $('#save-project-details-button').on('click', function () {
+            var projectId = $('#project-id').val(); // Recupera el ID del campo oculto
+            var newName = $('#project-name').val();
+            var newDescription = $('#project-description').val();
+
+            if (projectId) {
+                $.ajax({
+                    type: 'POST',
+                    url: '/board/update_project/' + projectId + '/',
+                    data: {
+                        'new_name': newName,
+                        'new_description': newDescription
+                    },
+                    success: function (data) {
+                        if (data.success) {
+                            // Actualiza la vista si la actualización fue exitosa
+                            $('#project-modal').modal('hide');
+                            window.location.href = '/board/';
+                            // Aquí puedes recargar la información del proyecto actualizado si es necesario.
+                        } else {
+                            // Maneja errores si la actualización no fue exitosa
+                            alert('Error: ' + data.error);
+                        }
+                    }
+                });
+            } else {
+                // Maneja el caso en el que projectId no tiene un valor válido
+                alert('Error: El proyecto no tiene un ID válido.');
+            }
+        });
+
+
+    });
+</script>
+{% endblock %}

@@ -1,0 +1,6 @@
+
+<div class="project-card">
+    <h2>{{ project.name }}</h2>
+    <p>{{ project.description }}</p>
+    <button type="button" class="btn btn-primary" hx-get="{% url 'board:project_detail' project.id %}" hx-target="#project-modal" hx-indicator="true">Ver detalles</button>
+</div>

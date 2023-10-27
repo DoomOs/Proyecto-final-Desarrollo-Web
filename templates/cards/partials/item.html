@@ -1,0 +1,18 @@
+{% for item in items%}
+
+<div hx-get="{% url 'cards:item' item.uuid %}" hx-swap="innerHTML" hx-trigger="click" hx-target="#modal-here"
+    class="item card-body rounded bg-white shadow-2 mb-2 p-3 pt-2" id="item-{{ item.uuid }}"
+    _="on htmx:afterOnLoad if event.target is me then add .show to #modal then add .show to #modal-backdrop">
+    <div>
+      <!--El archivo de etiquetas de elementos se carga tanto a través de htmx como mediante el motor de plantillas de django,
+    Hacemos eso para que cualquier adición o eliminación de etiquetas no actualice la interfaz de usuario de una manera rara-->
+        {% if item.tags.all %}
+            <div class="d-inline-flex " id="item-{{ item.uuid }}-tags" hx-target="#item-{{ item.uuid }}-tags"
+                hx-swap="innerHTML swap:20ms" hx-get="{% url 'cards:item-tags' item.uuid %}" hx-trigger="load">
+                {% include "cards/partials/item-tags.html" with item=item %}
+            </div>
+        {% endif %}
+    </div>
+    <a href="#" class="text-dark" >{{ item.title}}</a>
+</div>
+{% endfor %}

@@ -1,0 +1,6 @@
+Django
+django-crispy-forms
+mysqlclient
+django-mysql
+django-htmx
+coverage
